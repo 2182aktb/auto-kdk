@@ -3,7 +3,7 @@ name: QMK Firmware Build
 on:
   push:
     paths:
-      - 'keyboards/**'
+      - 'Keyboards/**'
 
 jobs:
   build:
