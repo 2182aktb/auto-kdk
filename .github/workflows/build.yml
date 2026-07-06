@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{needs.matrix != '' && fromJson(needs.matrix.outputs.matrix) || fromJson('{"include":[]}')}}
+      matrix: ${{needs.matrix= '' && fromJson(needs.matrix.outputs.matrix) || fromJson('{"include":[]}')}}
     steps:
       - uses: actions/checkout@v4
       - name: Build Firmware
