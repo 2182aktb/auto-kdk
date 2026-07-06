@@ -1,10 +1,53 @@
 name: Build Keyboard Firmware
 
-on:
-  push:
-    branches:
-      - "**"
+on: [push, workflow_dispatch]
 
 jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps:set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-matrix
+        run: |
+          if [ -f target.json ]; then
+            echo "matrix=$(jq -c . target.json)" >> $GITHUB_OUTPUT
+          else
+            echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
+          fi
+
   build:
-    uses: sekigon-gonnoc/vial-keymap-c-editor/.github/workflows/build-keymap.yml@main
+    needs: matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{尊.matrix != '' && fromJson(needs.matrix.outputs.matrix) || fromJson('{"include":[]}')}}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Firmware
+        uses: sekigon-gonnoc/qmk-build-action@main
+        with:
+          keyboard: ${{ matrix.keyboard }}
+          keymap: ${{ matrix.keymap }}
+          vial_id: ${{ matrix.vial_id }}
+          layouts: ${{ matrix.layouts }}
+          extraflags: ${{ matrix.extraflags }}
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-${{ matrix.keyboard }}-${{ matrix.keymap }}-${{ github.run_id }}-${{ strategy.job-index }}
+          path: |
+            *.hex
+            *.bin
+            *.uf2
+
+  merge:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: firmware-${{ github.run_id }}
+          pattern: artifact-*
