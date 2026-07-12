@@ -7,31 +7,4 @@ on:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        include:
-          - keyboard: "yumiyumi17"
-            keymap: "vial"
-            target: "uf2"
-            flags: "EXTRAFLAGS=-DINIT_EE_HANDS_LEFT"
-            name: "yumiyumi17_vial_left"
-          - keyboard: "yumiyumi17"
-            keymap: "vial"
-            target: "uf2"
-            flags: "EXTRAFLAGS=-DINIT_EE_HANDS_RIGHT"
-            name: "yumiyumi17_vial_right"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - uses: sekigon-gonnoc/vial-keymap-c-editor/.github/actions/build@main
-        with:
-          keyboard: ${{ matrix.keyboard }}
-          keymap: ${{ matrix.keymap }}
-          target: ${{ matrix.target }}
-          flags: ${{ matrix.flags }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.name }}
-          path: ./*.${{ matrix.target }}
+    uses: sekigon-gonnoc/vial-keymap-c-editor/.github/workflows/build-keymap.yml@main
